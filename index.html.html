@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOKYO 2026-2027 日本行 | 9天8夜男團東京潮遊</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        tokyo: {
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#38bdf8',
+                            pink: '#ec4899',
+                            gold: '#f59e0b',
+                            purple: '#a855f7'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card-hover {
+            transition: all 0.3s ease;
+        }
+        .glass-card-hover:hover {
+            transform: translateY(-3px);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.15);
+        }
+        #map {
+            height: 480px;
+            border-radius: 1rem;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="p-2 bg-gradient-to-tr from-sky-500 to-purple-600 rounded-xl text-white font-bold text-lg shadow-lg shadow-sky-500/20">
+                    <i class="fa-solid fa-plane-arrival"></i>
+                </span>
+                <div>
+                    <h1 class="font-bold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-sky-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+                        TOKYO 2026-2027 日本行
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">12/24 ~ 01/01 (9 Days 8 Nights) | Budget: NT$ 90,000/人</p>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex space-x-1 text-sm font-medium">
+                <button onclick="scrollToSection('optimization-notes')" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-emerald-400 transition font-semibold"><i class="fa-solid fa-bolt mr-1.5"></i>動線優化報告</button>
+                <button onclick="scrollToSection('itinerary')" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-sky-400 transition"><i class="fa-solid fa-calendar-days mr-1.5"></i>每日行程(含交通)</button>
+                <button onclick="scrollToSection('transport-guide')" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-sky-400 transition"><i class="fa-solid fa-train-subway mr-1.5"></i>交通評估</button>
+                <button onclick="scrollToSection('must-visit')" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-sky-400 transition"><i class="fa-solid fa-star mr-1.5"></i>必去與美食</button>
+                <button onclick="scrollToSection('nye')" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-pink-400 hover:text-pink-300 transition font-semibold"><i class="fa-solid fa-sparkles mr-1.5"></i>12/31 跨年企劃</button>
+                <button onclick="scrollToSection('budget')" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-sky-400 transition"><i class="fa-solid fa-coins mr-1.5"></i>預算評估</button>
+                <button onclick="scrollToSection('map-section')" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-sky-400 transition"><i class="fa-solid fa-map-location-dot mr-1.5"></i>地圖</button>
+            </nav>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleCurrencyModal()" class="px-3 py-1.5 text-xs font-semibold bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 rounded-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-calculator"></i> 匯率換算
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
+
+        <!-- Hero Card -->
+        <section class="relative rounded-3xl overflow-hidden glass-card p-6 md:p-10 border border-slate-700/50 bg-gradient-to-r from-slate-900 via-slate-900/90 to-purple-950/40">
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-15"></div>
+            <div class="relative z-10 max-w-3xl space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i> 已完成交通動線優化 ‧ 順暢度與緩衝時間二次精算
+                </div>
+                <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                    東京跨年極致潮流之旅 <br/>
+                    <span class="bg-gradient-to-r from-sky-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">全行程交通精算 ‧ 雙歌舞秀 ‧ 頂級和牛</span>
+                </h2>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    每日行程均已嵌入**點對點地鐵/JR路線、車程與步行時間**！採用「Suica卡搭電車 + 深夜小黃/Uber」最佳組合，修復跨區折返與壓線風險，完美掌控時間！
+                </p>
+
+                <!-- Quick Info Badges -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
+                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                        <span class="text-xs text-slate-400 block">去程航班</span>
+                        <span class="font-bold text-sky-400 text-sm">12/24 17:00 飛</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                        <span class="text-xs text-slate-400 block">回程航班</span>
+                        <span class="font-bold text-sky-400 text-sm">01/01 15:00 返</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                        <span class="text-xs text-slate-400 block">主要交通</span>
+                        <span class="font-bold text-emerald-400 text-sm"><i class="fa-solid fa-subway mr-1"></i>JR/地鐵 + 深夜計程車</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                        <span class="text-xs text-slate-400 block">歌舞秀企劃</span>
+                        <span class="font-bold text-pink-400 text-sm"><i class="fa-solid fa-fire mr-1"></i>雙歌舞秀 (D4 & D7)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Optimization Analysis Section -->
+        <section id="optimization-notes" class="space-y-4 scroll-mt-20">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-emerald-400"></i> 行程交通順暢度與優化診斷
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500 space-y-2">
+                    <h3 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-route"></i> 1. Day 4 地理跨區優化
+                    </h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        原行程「築地(東) ➔ 原宿(西) ➔ 帝王蟹(東)」需橫跨東京兩次。現已將原宿移至 Day 5（緊鄰澀谷），Day 4 集中於 **築地/銀座 ➔ 帝王蟹 ➔ 六本木歌舞秀**，減少 1.5 小時無謂搭車！
+                    </p>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-sky-500 space-y-2">
+                    <h3 class="font-bold text-sky-400 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-right-arrow-left"></i> 2. Day 7 車程折返優化
+                    </h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        原行程在新宿與中野間來回拉車。優化為：**早上先抵達中野動畫挖寶 ➔ JR 6分鐘直達新宿吃風雲兒沾麵/哥吉拉/伊勢丹**，順暢不走回頭路！
+                    </p>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500 space-y-2">
+                    <h3 class="font-bold text-amber-400 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plane-departure"></i> 3. Day 9 離境安全緩衝
+                    </h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        因應下午 15:00 返台航班，將元旦拉麵午餐調整為 **11:15 ~ 12:15** 於東京車站享用，**12:15 準時搭車前往機場**，確保保留完整 2 小時備買伴手禮與手續時間！
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transport Choice Advice Section -->
+        <section id="transport-guide" class="space-y-4 scroll-mt-20">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-compass text-sky-400"></i> 交通建議：為什麼「地鐵/電車」比「包車」好？
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-sky-500 space-y-2">
+                    <h3 class="font-bold text-sky-400 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-train-subway"></i> 推薦方案：JR + 東京地鐵 (地鐵為主)
+                    </h3>
+                    <ul class="text-xs text-slate-300 space-y-1.5 list-disc pl-4 leading-relaxed">
+                        <li><strong>準時不卡塞車：</strong> 年底繁華區（澀谷/六本木/銀座）陸上交通極擁擠，地鐵班次密集且時間好掌控。</li>
+                        <li><strong>費用極低：</strong> 全程電車交通費只需約 <strong>NT$ 2,000 ~ 2,500 /人</strong>（包車高達 NT$ 12,000+/人）。</li>
+                        <li><strong>深夜搭配 Uber/小黃：</strong> 散場、看完歌舞秀或深夜燒肉後，4人直接叫一台 Taxi 回飯店，便宜又方便。</li>
+                    </ul>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-rose-500 space-y-2">
+                    <h3 class="font-bold text-rose-400 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-car-side"></i> 棄用全程包車的原因
+                    </h3>
+                    <ul class="text-xs text-slate-300 space-y-1.5 list-disc pl-4 leading-relaxed">
+                        <li><strong>景點多在市中心：</strong> 各景點距離車程僅 10-15 分鐘，包車效益低且有司機工時限制（通常限10小時）。</li>
+                        <li><strong>停車極其困難：</strong> 繁華區停車費一小時 JPY 1,000-1,500，且臨停下車點常受限。</li>
+                        <li><strong>建議替代：</strong> 僅於第一天/最後一天攜帶大行李時，可視情況預約機場單趟接送專車。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Budget Evaluation Section -->
+        <section id="budget" class="space-y-6 scroll-mt-20">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-coins text-amber-400"></i> 每人 90,000 元預算深度評估
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-1">針對年底跨年旺季（12/24 - 01/01），估算每位23歲男生的費用分佈</p>
+                </div>
+                <div class="bg-slate-800/90 border border-slate-700 p-3 rounded-xl text-xs flex items-center gap-4">
+                    <div>
+                        <span class="text-slate-400">目前設定預估匯率:</span>
+                        <span class="text-sky-400 font-bold ml-1">1 JPY ≈ 0.21 TWD</span>
+                    </div>
+                    <button onclick="toggleCurrencyModal()" class="text-sky-400 underline hover:text-sky-300">開啟計算機</button>
+                </div>
+            </div>
+
+            <!-- Budget Breakdown Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Evaluation Verdict -->
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-emerald-500 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">結論：完全足夠</span>
+                            <i class="fa-solid fa-shield-halved text-2xl text-emerald-400"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">9 萬元預算評估報告</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            採用「地鐵/JR + 夜間計程車」取代昂貴包車，省下過萬元交通費！即使加入兩晚奢華歌舞秀（Burlesque Tokyo + party on Tokyo），每人 **NT$90,000** 預算依然非常充裕！
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-700/60 text-xs text-slate-400 flex justify-between">
+                        <span>預估剩餘可支配零用金:</span>
+                        <span class="text-emerald-400 font-bold">~ JPY 165,000 /人</span>
+                    </div>
+                </div>
+
+                <!-- Expense Breakdown Progress Bar -->
+                <div class="glass-card p-6 rounded-2xl md:col-span-2 space-y-4">
+                    <h3 class="text-md font-bold text-slate-200 flex items-center justify-between">
+                        <span>費用結構預估 (單人 TWD)</span>
+                        <span class="text-xs text-slate-400 font-normal">總計約: NT$ 88,500</span>
+                    </h3>
+
+                    <div class="space-y-3">
+                        <!-- Flight -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300"><i class="fa-solid fa-plane text-sky-400 w-4"></i> 機票 (跨年旺季來回/含託運)</span>
+                                <span class="font-semibold text-white">NT$ 23,000</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2">
+                                <div class="bg-sky-400 h-2 rounded-full" style="width: 26%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Hotel -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300"><i class="fa-solid fa-hotel text-purple-400 w-4"></i> 質感住宿 (8晚雙人房平分/新宿或六本木質感飯店)</span>
+                                <span class="font-semibold text-white">NT$ 26,000</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2">
+                                <div class="bg-purple-400 h-2 rounded-full" style="width: 29%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Food -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300"><i class="fa-solid fa-utensils text-amber-400 w-4"></i> 餐飲饗宴 (含Yoroniku, 八芳, Omakase, 帝王蟹, 鰻魚飯)</span>
+                                <span class="font-semibold text-white">NT$ 22,500</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2">
+                                <div class="bg-amber-400 h-2 rounded-full" style="width: 25%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tickets & Nightlife -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300"><i class="fa-solid fa-ticket text-pink-400 w-4"></i> 門票與夜生活 (Burlesque + party on雙歌舞秀, Shibuya Sky, Stellar Garden)</span>
+                                <span class="font-semibold text-white">NT$ 12,000</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2">
+                                <div class="bg-pink-400 h-2 rounded-full" style="width: 13.5%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Transport & Shopping -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300"><i class="fa-solid fa-train-subway text-emerald-400 w-4"></i> 當地電車/JR + 深夜計程車預留</span>
+                                <span class="font-semibold text-white">NT$ 5,000</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2">
+                                <div class="bg-emerald-400 h-2 rounded-full" style="width: 5.5%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Must Visit & Must Eat Direct Highlights -->
+        <section id="must-visit" class="space-y-6 scroll-mt-20">
+            <div>
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-sky-400"></i> 指定必去景點與必吃美食對照表
+                </h2>
+                <p class="text-slate-400 text-sm mt-1">已全數完美順暢無縫融入 9 天行程，均附有照片建議與拍質感照提示</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Must Visit Spots -->
+                <div class="glass-card p-6 rounded-2xl space-y-4">
+                    <h3 class="text-lg font-bold text-sky-400 border-b border-slate-700/80 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-camera"></i> 指定必去景點與雙歌舞秀
+                    </h3>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-pink-400"><i class="fa-solid fa-star text-pink-400 mr-1"></i>Burlesque Tokyo (伯勒斯克歌舞秀 - 第一晚)</span>
+                                <p class="text-xs text-slate-400">六本木最具代表性頂級歌舞俱樂部，震撼燈光與性感熱舞</p>
+                            </div>
+                            <span class="text-xs bg-pink-500/20 text-pink-300 px-2 py-1 rounded">Day 4</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-pink-400"><i class="fa-solid fa-fire text-amber-400 mr-1"></i>party on Tokyo (Box Discotheque - 第二晚加碼)</span>
+                                <p class="text-xs text-slate-400">全東京最猛超狂音樂歌舞趴體秀，極致視覺震撼</p>
+                            </div>
+                            <span class="text-xs bg-pink-500/20 text-pink-300 px-2 py-1 rounded">Day 7 (加碼)</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">3. 秋葉原動漫模型</span>
+                                <p class="text-xs text-slate-400">Radio Kaikan, AmiAmi, Kotobukiya公仔巡禮 (縮短逛街精準買)</p>
+                            </div>
+                            <span class="text-xs bg-sky-500/20 text-sky-300 px-2 py-1 rounded">Day 3</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">4. 東京晴空塔 (Skytree)</span>
+                                <p class="text-xs text-slate-400">俯瞰關東平原，搭配Solamachi與隅田水岸步道</p>
+                            </div>
+                            <span class="text-xs bg-sky-500/20 text-sky-300 px-2 py-1 rounded">Day 2</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">5. 澀谷 SKY (SHIBUYA SKY)</span>
+                                <p class="text-xs text-slate-400">夕陽黃昏時段拍攝時尚大片必去高空露台</p>
+                            </div>
+                            <span class="text-xs bg-sky-500/20 text-sky-300 px-2 py-1 rounded">Day 5</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">6. 東京鐵塔 (Tokyo Tower) & Sky Lounge</span>
+                                <p class="text-xs text-slate-400">地下停車場階梯取景 + 王子大飯店 33F 高空夜景酒吧</p>
+                            </div>
+                            <span class="text-xs bg-sky-500/20 text-sky-300 px-2 py-1 rounded">Day 2 & Day 6</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">7. 淺草寺 & 明治神宮</span>
+                                <p class="text-xs text-slate-400">東京兩大神社古韻，感受新年與節慶氣息</p>
+                            </div>
+                            <span class="text-xs bg-sky-500/20 text-sky-300 px-2 py-1 rounded">Day 2 & Day 5</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Must Eat Restaurants -->
+                <div class="glass-card p-6 rounded-2xl space-y-4">
+                    <h3 class="text-lg font-bold text-amber-400 border-b border-slate-700/80 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-utensils"></i> 美食願望清單 (6大盛宴)
+                    </h3>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">1. 帝王蟹吃到飽 (Crab Buffet)</span>
+                                <p class="text-xs text-slate-400">選擇：築地/銀座蟹神或奢華松葉蟹帝王蟹奢饗宴</p>
+                            </div>
+                            <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-1 rounded">Day 4 晚餐</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">2. YORONIKU (燒肉 YORONIKU)</span>
+                                <p class="text-xs text-slate-400">東京和牛燒肉神級天花板，聖誕夜預約制饗宴</p>
+                            </div>
+                            <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-1 rounded">Day 2 晚餐</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">3. 銀座八芳 (Happo Ginza)</span>
+                                <p class="text-xs text-slate-400">銀座極致割烹/鐵板燒料理，帥氣約會質感風</p>
+                            </div>
+                            <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-1 rounded">Day 3 晚餐</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">4. 鰻魚飯 (Unagi Hitsumabushi)</span>
+                                <p class="text-xs text-slate-400">東京名店「鰻魚 備長」或「野田岩」炭香鰻魚三吃</p>
+                            </div>
+                            <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-1 rounded">Day 2 午餐</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">5. 生魚片/海鮮丼 (Sashimi)</span>
+                                <p class="text-xs text-slate-400">築地場外市場新鮮海膽、黑鮪魚大腹海鮮丼</p>
+                            </div>
+                            <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-1 rounded">Day 4 早餐</span>
+                        </li>
+                        <li class="flex items-start justify-between bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <span class="font-bold text-white">6. 頂級 Omakase 板前壽司</span>
+                                <p class="text-xs text-slate-400">鮨 銀座 Onodera 或 Sushi Tokyo Ten 職人現場握壽司</p>
+                            </div>
+                            <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-1 rounded">Day 5 晚餐</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Special 12/31 New Year's Eve Feature Card -->
+        <section id="nye" class="scroll-mt-20 relative overflow-hidden glass-card rounded-3xl p-6 sm:p-8 border-2 border-pink-500/40 bg-gradient-to-br from-purple-950/80 via-slate-900 to-slate-950">
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="p-3 bg-pink-500/20 border border-pink-500/40 rounded-2xl text-pink-400 text-xl font-bold">
+                            <i class="fa-solid fa-champagne-glasses"></i>
+                        </span>
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-widest text-pink-400">特別企劃 ‧ 跨年夜焦點</span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-white">12/31 跨年狂歡與煙火夜景企劃</h2>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 bg-pink-500/20 text-pink-300 border border-pink-500/30 rounded-full text-xs font-semibold self-start sm:self-auto">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> 東京最潮跨年解法
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Option 1: Yokohama Fireworks -->
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-700/70 hover:border-pink-500/50 transition">
+                        <div class="text-pink-400 font-bold text-sm mb-2 flex items-center justify-between">
+                            <span><i class="fa-solid fa-burst text-amber-400 mr-2"></i>方案 A：橫濱港跨年花火大會</span>
+                            <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">首選推薦</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            東京市區跨年煙火極少，但**橫濱未來21港區**每年12/31午夜都有燦爛的倒數煙火（Yokohama Sparking Twilight）！傍晚登頂橫濱地標塔 69F 俯瞰港灣，午夜看煙火綻放！
+                        </p>
+                    </div>
+
+                    <!-- Option 2: Zojoji Midnight Hatsumode -->
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-700/70 hover:border-pink-500/50 transition">
+                        <div class="text-purple-400 font-bold text-sm mb-2 flex items-center justify-between">
+                            <span><i class="fa-solid fa-gopuram text-purple-400 mr-2"></i>方案 B：增上寺「初詣」與東京鐵塔</span>
+                            <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">日本傳統潮流</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            午夜12點在百年古剎**增上寺**聽敲鐘，背後就是巨型點亮特製新年燈光的**東京鐵塔**！全日本最夯的傳統與現代交融氛圍，拍照質感極高。
+                        </p>
+                    </div>
+
+                    <!-- Option 3: Roppongi/Shibuya Club Countdown -->
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-700/70 hover:border-pink-500/50 transition">
+                        <div class="text-sky-400 font-bold text-sm mb-2 flex items-center justify-between">
+                            <span><i class="fa-solid fa-music text-sky-400 mr-2"></i>方案 C：澀谷/六本木頂級 Nightclub</span>
+                            <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">23歲嗨爆首選</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            前往東京指標夜店 **SEL OCTAGON**、**ZOUK TOKYO** 或 **1OAK**。全東京最頂尖DJ與世界級燈光音響，倒數噴紙花香檳，最適合年輕男團瘋狂嗨整夜！
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 p-4 rounded-xl border border-pink-500/20 text-xs text-pink-200 flex items-center gap-3">
+                    <i class="fa-solid fa-lightbulb text-amber-400 text-lg flex-shrink-0"></i>
+                    <span><strong>男團最佳跨年組合玩法：</strong> 12/31傍晚搭 JR 東橫線去橫濱觀賞港灣夕陽與煙火倒數 ➔ 凌晨1:30搭乘通宵營運電車回東京六本木夜店續攤狂歡 ➔ 清晨順道至增上寺體驗日本新年初詣！</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Itinerary Timeline -->
+        <section id="itinerary" class="space-y-6 scroll-mt-20">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-sky-400"></i> 9天8夜 完整精緻行程安排 (已含點對點交通時間與路線)
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-1">專為年輕帥哥團設計，包含電車路線、轉乘時間與步行指引！</p>
+                </div>
+
+                <!-- Day Filter Buttons -->
+                <div class="flex flex-wrap gap-1.5" id="day-filter-container">
+                    <button onclick="filterDay('all')" class="day-btn active px-3 py-1.5 text-xs rounded-lg font-semibold bg-sky-500 text-white transition">全部天數</button>
+                </div>
+            </div>
+
+            <!-- Days Container -->
+            <div id="itinerary-timeline" class="space-y-8">
+                <!-- Javascript will render complete cards below -->
+            </div>
+        </section>
+
+        <!-- Leaflet Interactive Map -->
+        <section id="map-section" class="space-y-4 scroll-mt-20">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-map-location-dot text-pink-400"></i> 東京行程互動地圖
+                    </h2>
+                    <p class="text-slate-400 text-sm">點擊地圖標記可查看景點/美食/雙歌舞秀詳細資訊與每日標籤</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="inline-flex items-center gap-1 text-sky-400"><i class="fa-solid fa-location-dot"></i> 景點</span>
+                    <span class="inline-flex items-center gap-1 text-amber-400"><i class="fa-solid fa-utensils"></i> 美食</span>
+                    <span class="inline-flex items-center gap-1 text-pink-400"><i class="fa-solid fa-martini-glass"></i> 歌舞秀/夜生活</span>
+                </div>
+            </div>
+
+            <div class="glass-card p-3 rounded-2xl relative">
+                <div id="map"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Currency Exchange Modal -->
+    <div id="currencyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card p-6 rounded-2xl max-w-md w-full border border-slate-700 space-y-5 relative">
+            <button onclick="toggleCurrencyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-slate-700 pb-3">
+                <span class="p-2 bg-sky-500/20 text-sky-400 rounded-lg">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </span>
+                <div>
+                    <h3 class="text-lg font-bold text-white">即時日幣/台幣 換算器</h3>
+                    <p class="text-xs text-slate-400">快速算購物公仔、高級餐廳消費</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">日圓 (JPY ¥)</label>
+                    <div class="relative">
+                        <input type="number" id="jpyInput" oninput="convertCurrency('jpy')" placeholder="例: 10000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-sky-400">
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-500 font-bold">¥</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-center text-slate-500">
+                    <i class="fa-solid fa-arrows-up-down text-sm"></i>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">新台幣 (TWD $)</label>
+                    <div class="relative">
+                        <input type="number" id="twdInput" oninput="convertCurrency('twd')" placeholder="例: 2100" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-sky-400">
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-500 font-bold">NT$</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1">
+                    <div class="flex justify-between">
+                        <span>預估匯率基準:</span>
+                        <span class="text-sky-400 font-semibold">1 JPY = 0.21 TWD</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>換算參考:</span>
+                        <span class="text-slate-300">萬圓日幣 ≈ NT$ 2,100 元</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="toggleCurrencyModal()" class="w-full py-2.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold rounded-xl transition text-sm">
+                關閉窗口
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-16 bg-slate-900 border-t border-slate-800 py-8 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p class="font-bold text-slate-400">2026-2027 Tokyo Boys New Year Tour Package</p>
+            <p>專為23歲年輕男團規劃之極致東京跨年行程 | 動線優化版 ‧ 電車精算 ‧ 雙歌舞秀企劃</p>
+        </div>
+    </footer>
+
+    <script>
+        // Optimized Itinerary Data with Integrated Transit Information
+        const itineraryData = [
+            {
+                day: 1,
+                date: "12/24 (四) - 聖誕夜浪漫點燈與歌舞伎町巡禮",
+                title: "降落東京 ‧ 六本木櫸樹坂藍白燈海 ‧ 新宿 3D 貓與深夜餐酒",
+                activities: [
+                    {
+                        time: "17:00 - 20:30",
+                        name: "台灣桃園飛抵東京 (成田/羽田)",
+                        category: "flight",
+                        desc: "辦理入境並領取行李，開通 Suica (西瓜卡)。",
+                        tag: "入境交通",
+                        transitNext: "搭乘 京成 Skyliner (成田) 或 單軌電車 (羽田) 直達市區 ➔ 約 45~55 分鐘",
+                        photoTip: "拍攝機艙窗外東京夜景與機場出境合照。"
+                    },
+                    {
+                        time: "20:30 - 21:15",
+                        name: "飯店 Check-in (新宿/六本木質感飯店)",
+                        category: "hotel",
+                        desc: "辦理入住並放置行李，整理穿搭準備聖誕夜出門！",
+                        tag: "住宿",
+                        transitNext: "搭乘 地鐵大江戶線 至 六本木站 ➔ 約 12 分鐘"
+                    },
+                    {
+                        time: "21:30 - 22:45",
+                        name: "六本木櫸樹坂通 (Keyakizaka) 聖誕燈海",
+                        category: "spot",
+                        desc: "【聖誕夜限定】全東京最頂級浪漫的藍白聖誕燈海街道，後方即是耀眼的東京鐵塔！",
+                        tag: "聖誕點燈 / 必拍",
+                        transitNext: "搭乘 地鐵大江戶線 至 新宿站 ➔ 約 10 分鐘",
+                        photoTip: "站在櫸樹坂天橋，抓準藍白燈海與遠處紅色東京鐵塔交織的街拍大片！"
+                    },
+                    {
+                        time: "23:00 - 00:00",
+                        name: "【追加】新宿 3D 巨貓 & 歌舞伎町 Tower 戶外街景",
+                        category: "spot",
+                        desc: "朝聖新宿站東口栩栩如生的 3D 立體貓咪，並拍攝歌舞伎町 Tower 霓虹光夜景。",
+                        tag: "追加亮點",
+                        transitNext: "步行 5 分鐘",
+                        photoTip: "抬頭拍下 3D 巨貓互動瞬間與歌舞伎町入口巨型燈牌！"
+                    },
+                    {
+                        time: "00:00 - 02:00",
+                        name: "新宿歌舞伎町 / 六本木深夜餐酒館乾杯",
+                        category: "food",
+                        desc: "聖誕夜第一餐與慶祝乾杯！體驗深夜熱鬧居酒屋與酒吧氣氛。",
+                        tag: "熱門美食",
+                        transitNext: "散步或搭乘深夜計程車返回飯店 ➔ 約 5~10 分鐘 (約 JPY 1,200)",
+                        photoTip: "拿著生啤酒/調酒在霓虹燈招牌下拍下男團東京首夜合照。"
+                    }
+                ]
+            },
+            {
+                day: 2,
+                date: "12/25 (五) - 聖誕節頂級視覺與和牛奢華饗宴",
+                title: "淺草古韻 ‧ 隅田水岸 ‧ 晴空塔聖誕市集 ‧ 表參道燈海 ‧ YORONIKU ‧ Stellar Garden",
+                activities: [
+                    {
+                        time: "09:30 - 11:30",
+                        name: "淺草寺 (Sensoji Temple)",
+                        category: "spot",
+                        desc: "聖誕節清晨拜訪百年古剎，參拜大雷門燈籠與抽籤，體驗日式古韻。",
+                        tag: "指定必去",
+                        transitNext: "沿隅田步道步行 15 分鐘（或搭乘東武伊勢崎線 3 分鐘）",
+                        photoTip: "在雷門大燈籠前廣角仰拍，或以五重塔為背景展現質感日式穿搭。"
+                    },
+                    {
+                        time: "11:45 - 12:45",
+                        name: "【追加】隅田川水岸步道 (Sumida River Walk)",
+                        category: "spot",
+                        desc: "橫跨隅田川的高架水岸步道，近距離欣賞東京晴空塔與東武鐵道電車風光。",
+                        tag: "追加亮點 / 文青質感",
+                        transitNext: "步行 5 分鐘即達晴空塔 Solamachi 樓下",
+                        photoTip: "在水岸鐵橋上拍攝以晴空塔為背景的男子團體街拍！"
+                    },
+                    {
+                        time: "13:00 - 14:15",
+                        name: "鰻魚 備長 (Hitsumabushi Bincho 晴空塔店)",
+                        category: "food",
+                        desc: "必吃願望清單！正宗名古屋風格備長炭蒲燒鰻魚三吃，皮酥肉嫩。",
+                        tag: "指定必吃",
+                        transitNext: "電梯上樓直達晴空塔展望台與廣場",
+                        photoTip: "特寫淋上特製香濃醬汁、金黃酥脆的鰻魚飯三吃開箱照。"
+                    },
+                    {
+                        time: "14:30 - 16:30",
+                        name: "東京晴空塔 (Skytree) & Solamachi 聖誕市集",
+                        category: "spot",
+                        desc: "登上展望台俯瞰全東京，並漫步晴空塔限定歐洲風情聖誕市集與巨型聖誕樹。",
+                        tag: "指定必去 / 聖誕市集",
+                        transitNext: "搭乘 地鐵半藏門線 (押上➔表參道) ➔ 約 25 分鐘直達",
+                        photoTip: "在晴空塔廣場巨型聖誕樹下與高聳晴空塔一同合影。"
+                    },
+                    {
+                        time: "17:00 - 18:30",
+                        name: "表參道 (Omotesando) 聖誕金黃燈海大道",
+                        category: "spot",
+                        desc: "【聖誕節限定】數十萬顆暖金光燈飾點亮整條櫸木林蔭大道，精品店交相輝映。",
+                        tag: "聖誕限時點燈",
+                        transitNext: "步行 10 分鐘或搭計程車 5 分鐘",
+                        photoTip: "在表參道天橋上拍攝雙向金黃燈海與車水馬龍的流光溢彩。"
+                    },
+                    {
+                        time: "19:00 - 21:00",
+                        name: "YORONIKU (燒肉 YORONIKU 南青山店)",
+                        category: "food",
+                        desc: "必吃願望清單！東京和牛燒肉界天花板，專人桌邊極致服務，入口即化夏多布里昂與松露蛋黃和牛飯！",
+                        tag: "指定必吃 / 聖誕饗宴",
+                        transitNext: "搭乘 地鐵大江戶線 (青山一丁目➔赤羽橋) ➔ 約 12 分鐘",
+                        photoTip: "記錄專人炙燒極上和牛片、爆汁金黃切面與松露和牛飯的驚艷瞬間。"
+                    },
+                    {
+                        time: "21:30 - 23:30",
+                        name: "Sky Lounge Stellar Garden (王子大飯店 33F)",
+                        category: "nightlife",
+                        desc: "必去願望清單！貼著正面巨大耀眼的東京鐵塔夜景，聖誕夜享用質感調酒！",
+                        tag: "指定必去 / 聖誕夜景酒吧",
+                        transitNext: "搭乘計程車回飯店 ➔ 約 10~15 分鐘 (約 JPY 2,000)",
+                        photoTip: "手持調酒杯，以窗外巨大耀眼的紅色東京鐵塔聖誕點燈為背景拍下高調酷照！"
+                    }
+                ]
+            },
+            {
+                day: 3,
+                date: "12/26 (六) - 秋葉原精準買 ‧ 萬世橋紅磚 ‧ 銀座八芳大餐",
+                title: "秋葉原模型尋寶 ‧ 神田萬世橋 ‧ 丸之內光影 ‧ 銀座精品街 ‧ 銀座八芳",
+                activities: [
+                    {
+                        time: "10:00 - 12:15",
+                        name: "秋葉原 (Akihabara) 模型公仔快速巡禮",
+                        category: "spot",
+                        desc: "直奔 Radio Kaikan (無線電會館) 與 AmiAmi 精準購買限定手辦公仔。",
+                        tag: "指定必去 / 精簡購物",
+                        transitNext: "步行 8 分鐘",
+                        photoTip: "在無線電會館門口與滿滿動漫霓虹看板前合照。"
+                    },
+                    {
+                        time: "12:30 - 13:30",
+                        name: "【追加】神田萬世橋 (mAAch ecute Kanda Manseibashi)",
+                        category: "spot",
+                        desc: "1912 年舊車站改建的文創紅磚長廊，旁邊即是神田川與電車軌道，極具文青潮感。",
+                        tag: "追加亮點",
+                        transitNext: "步行 5 分鐘",
+                        photoTip: "在拱形紅磚拱門廊道內拍攝日系質感穿搭照。"
+                    },
+                    {
+                        time: "13:30 - 14:30",
+                        name: "炸牛元村 (Gyukatsu Motomura) 秋葉原/神田店",
+                        category: "food",
+                        desc: "外酥內嫩在石板上親自加熱的熱門炸牛排。",
+                        tag: "人氣美食",
+                        transitNext: "搭乘 地鐵山手線/京濱東北線 ➔ 約 5 分鐘直達東京車站"
+                    },
+                    {
+                        time: "15:00 - 16:30",
+                        name: "【優化順序】東京車站丸之內廣場 & 行幸通金黃璀璨夜景",
+                        category: "spot",
+                        desc: "【順路前往】古色古香的東京車站紅磚帝國大樓點燈，以及丸之內中通奢華璀璨的香檳金燈海。",
+                        tag: "順路美景",
+                        transitNext: "步行 10 分鐘直達銀座精品街",
+                        photoTip: "廣角捕捉丸之內大道璀璨香檳金燈海與帝國大樓！"
+                    },
+                    {
+                        time: "16:45 - 18:30",
+                        name: "銀座 (Ginza) 精品建築與潮流快閃",
+                        category: "spot",
+                        desc: "快速朝聖 Ginza Six 藝術頂樓與 DOVER STREET MARKET GINZA。",
+                        tag: "精簡時尚購物",
+                        transitNext: "步行 5 分鐘直達銀座八芳餐廳",
+                        photoTip: "Ginza Six 幾何建築外牆前拍街頭時尚大片。"
+                    },
+                    {
+                        time: "19:00 - 21:30",
+                        name: "銀座八芳 (Happo Ginza)",
+                        category: "food",
+                        desc: "必吃願望清單！高級和風極緻割烹與鐵板料理，奢華尊榮。",
+                        tag: "指定必吃 / 高檔饗宴",
+                        transitNext: "搭乘地鐵或計程車返回飯店 ➔ 約 10~15 分鐘"
+                    }
+                ]
+            },
+            {
+                day: 4,
+                date: "12/27 (日) - 海鮮狂歡 ‧ 銀座奢潮 ‧ 帝王蟹 ‧ Burlesque 歌舞秀 (第一夜)",
+                title: "築地生魚片 ‧ 銀座潮流漫步 ‧ 帝王蟹吃到飽 ‧ Burlesque Tokyo 歌舞秀",
+                activities: [
+                    {
+                        time: "08:30 - 10:30",
+                        name: "築地場外市場 (Tsukiji Outer Market)",
+                        category: "food",
+                        desc: "必吃願望清單！爆量黑鮪魚大腹生魚片丼飯、現烤海膽、玉子燒。",
+                        tag: "指定必吃",
+                        transitNext: "步行 12 分鐘或搭乘地鐵 5 分鐘至銀座區域",
+                        photoTip: "滿滿海膽與鮪魚疊高高的海鮮丼飯俯拍圖。"
+                    },
+                    {
+                        time: "11:00 - 15:30",
+                        name: "【優化動線】銀座 / 有樂町潮流服飾精選漫步",
+                        category: "spot",
+                        desc: "同區深度漫步，逛有樂町阪急男士館、Uniqlo 旗艦店與潮流選品店，順暢不跨區！",
+                        tag: "動線優化 / 輕鬆購物",
+                        transitNext: "步行 5 分鐘即達帝王蟹餐廳",
+                        photoTip: "在銀座四丁目交叉口鐘樓前拍時尚街頭帥照。"
+                    },
+                    {
+                        time: "16:30 - 19:00",
+                        name: "帝王蟹/松葉蟹吃到飽盛宴 (築地/銀座蟹神或奢華蟹放題)",
+                        category: "food",
+                        desc: "必吃願望清單！新鮮肥美帝王蟹腳、松葉蟹放題，爽度破表！",
+                        tag: "指定必吃 / 大飽口福",
+                        transitNext: "搭乘 地鐵日比谷線 (銀座/東銀座➔六本木) ➔ 約 12 分鐘直達",
+                        photoTip: "手捧超巨大帝王蟹腳張口準備享用的浮誇合照。"
+                    },
+                    {
+                        time: "20:00 - 22:30",
+                        name: "Burlesque Tokyo (伯勒斯克舞孃歌舞秀 - 第一晚)",
+                        category: "nightlife",
+                        desc: "必去願望清單！【歌舞秀企劃一】東京最火紅六本木 Show Club，媲美拉斯維加斯級頂尖舞蹈與極致燈光音響！",
+                        tag: "指定必去 / 爆款歌舞秀",
+                        transitNext: "散步或搭乘計程車回飯店 ➔ 約 5~10 分鐘 (約 JPY 1,000)",
+                        photoTip: "主舞台炫目燈光下的高能量表演照片與男團現場熱烈氛圍！"
+                    }
+                ]
+            },
+            {
+                day: 5,
+                date: "12/28 (一) - 神社古韻 ‧ 原宿潮牌 ‧ 澀谷俯瞰 ‧ 頂級 Omakase",
+                title: "明治神宮大鳥居 ‧ 原宿貓街潮牌 ‧ 宮下公園 ‧ SHIBUYA SKY 夕陽 ‧ 頂級 Omakase 壽司",
+                activities: [
+                    {
+                        time: "09:30 - 11:00",
+                        name: "【優化併入】明治神宮 (Meiji Jingu) 巨型木造鳥居",
+                        category: "spot",
+                        desc: "【完美接軌】走進東京都心最大的原生森林參道，感受高聳檜木鳥居與莊嚴神聖氣息。",
+                        tag: "優化動線 / 森林漫步",
+                        transitNext: "步行 3 分鐘即達原宿貓街入口",
+                        photoTip: "在全日本最大的木造鳥居下拍攝氣勢磅礡的團體合照。"
+                    },
+                    {
+                        time: "11:15 - 13:30",
+                        name: "【優化併入】原宿 / 猫街 (Cat Street) 精準潮牌巡禮",
+                        category: "spot",
+                        desc: "重點鎖定 Supreme, Human Made, Kith 與 Stussy 快速購入限定款。",
+                        tag: "潮牌購物",
+                        transitNext: "沿貓街步行 10 分鐘直達澀谷宮下公園",
+                        photoTip: "Cat Street 街角工業風建築與潮牌店家前側拍。"
+                    },
+                    {
+                        time: "13:45 - 15:30",
+                        name: "澀谷 PARCO / 宮下公園 / MEGA Donki 爆買",
+                        category: "spot",
+                        desc: "Nintendo TOKYO, Pokemon Center，並至全東京最大唐吉訶德一次補齊小物。",
+                        tag: "潮流購物",
+                        transitNext: "步行 6 分鐘直達 SHIBUYA SKY 樓下"
+                    },
+                    {
+                        time: "15:45 - 17:45",
+                        name: "澀谷 SKY (SHIBUYA SKY)",
+                        category: "spot",
+                        desc: "必去願望清單！離地 229 公尺無邊際露台，抓準 Sunset Hour 拍攝頂級美照。",
+                        tag: "指定必去 / 絕美拍照",
+                        transitNext: "搭乘 地鐵銀座線 至 銀座/新宿 Omakase 壽司店 ➔ 約 15 分鐘",
+                        photoTip: "著名的 SKY EDGE 角落，背對落日夕陽與東京全景拍攝無敵帥照。"
+                    },
+                    {
+                        time: "18:30 - 21:00",
+                        name: "頂級 Omakase 板前壽司 (鮨 銀座 Onodera 或 Sushi Tokyo Ten)",
+                        category: "food",
+                        desc: "必吃願望清單！職人現場一對一握壽司，享用旬之鮮魚與絕妙壽司米香。",
+                        tag: "指定必吃 / 職人料理",
+                        transitNext: "搭乘地鐵回飯店 ➔ 約 10 分鐘"
+                    }
+                ]
+            },
+            {
+                day: 6,
+                date: "12/29 (二) - 沉浸藝術 ‧ 台場彩虹大橋與東京鐵塔經典角度",
+                title: "TeamLab Planets ‧ 豐洲海鮮 ‧ 台場海濱公園 & 自由女神 ‧ 東京鐵塔經典位 ‧ 和牛壽喜燒",
+                activities: [
+                    {
+                        time: "09:30 - 12:00",
+                        name: "teamLab Planets TOKYO (豐洲)",
+                        category: "spot",
+                        desc: "全感官沉浸式光影藝術體感展覽，涉水光影水晶宇宙。",
+                        tag: "拍照天花板",
+                        transitNext: "搭乘 百合海鷗號 1 站 至 市場前站 ➔ 約 3 分鐘",
+                        photoTip: "水晶宇宙 (The Infinite Crystal Universe) 鏡面空間內拍攝未來感全身剪影照。"
+                    },
+                    {
+                        time: "12:15 - 13:45",
+                        name: "豐洲千客萬來 / 豐洲市場海鮮料理",
+                        category: "food",
+                        desc: "體驗最新開幕的江戶風情溫泉街與海鮮大觀園。",
+                        tag: "人氣美食",
+                        transitNext: "搭乘 百合海鷗號 (市場前➔台場) ➔ 約 12 分鐘"
+                    },
+                    {
+                        time: "14:15 - 16:00",
+                        name: "【追加】台場海濱公園 & 自由女神像 / 彩虹大橋",
+                        category: "spot",
+                        desc: "欣賞東京灣開闊海景、台場自由女神像與橫跨海灣的壯麗彩虹大橋。",
+                        tag: "追加亮點",
+                        transitNext: "搭乘 百合海鷗號 至 汐留 轉 大江戶線 至 赤羽橋 ➔ 約 20 分鐘",
+                        photoTip: "以彩虹大橋與台場自由女神像為背景，拍攝無敵海景合照！"
+                    },
+                    {
+                        time: "16:45 - 18:45",
+                        name: "東京鐵塔 (Tokyo Tower) 經典拍點巡禮",
+                        category: "spot",
+                        desc: "必去願望清單！前往芝公園草坪與紅豆腐地下停車場階梯取景點拍點燈。",
+                        tag: "指定必去",
+                        transitNext: "搭乘 地鐵大江戶線 ➔ 約 10 分鐘",
+                        photoTip: "地下停車場出口階梯由下往上拍，完美將人與東京鐵塔全貌一同入鏡。"
+                    },
+                    {
+                        time: "19:15 - 21:30",
+                        name: "高級黑毛和牛壽喜燒 (人形町今半 或 石塚)",
+                        category: "food",
+                        desc: "特選和牛搭配甜鹹壽喜燒醬汁與滑嫩生蛋汁。",
+                        tag: "人氣美食",
+                        transitNext: "搭乘地鐵回飯店 ➔ 約 10~15 分鐘"
+                    }
+                ]
+            },
+            {
+                day: 7,
+                date: "12/30 (三) - 中野動漫尋寶 ‧ 新宿巨型哥吉拉 ‧ 雙歌舞秀 Party On",
+                title: "中野 Broadway 挖寶 ‧ 風雲兒沾麵 ‧ 哥吉拉巨頭 ‧ 伊勢丹男士館 ‧ party on Tokyo 歌舞秀",
+                activities: [
+                    {
+                        time: "10:00 - 12:00",
+                        name: "【優化順序】中野 Broadway (Nakano Broadway)",
+                        category: "spot",
+                        desc: "【順暢開局】公仔二次挖寶聖地，懷舊玩具、萬代、Mandarake 快速精準尋寶。",
+                        tag: "動漫挖寶",
+                        transitNext: "搭乘 JR 中央快速線 (中野➔新宿) ➔ 約 6 分鐘直達"
+                    },
+                    {
+                        time: "12:30 - 13:45",
+                        name: "風雲兒沾麵 或 AFURI 柚子鹽拉麵",
+                        category: "food",
+                        desc: "超狂濃厚魚介豚骨沾麵，年輕人最愛的東京濃郁拉麵。",
+                        tag: "平價人氣美食",
+                        transitNext: "步行 6 分鐘"
+                    },
+                    {
+                        time: "14:00 - 15:00",
+                        name: "【追加】歌舞伎町 Hotel Gracery 巨型哥吉拉頭像",
+                        category: "spot",
+                        desc: "近距離抬頭捕捉新宿地標性巨型哥吉拉怪獸頭像。",
+                        tag: "追加亮點",
+                        transitNext: "步行 5 分鐘",
+                        photoTip: "在大樓下方以廣角低角度拍攝巨型哥吉拉合影！"
+                    },
+                    {
+                        time: "15:15 - 17:30",
+                        name: "新宿東口 / 伊勢丹男士館 (Isetan Men's)",
+                        category: "spot",
+                        desc: "全日本最強男士時尚百貨，精準鎖定最新男裝潮牌展區。",
+                        tag: "精簡時尚",
+                        transitNext: "搭乘 JR 山手線 (新宿➔惠比壽) ➔ 約 9 分鐘"
+                    },
+                    {
+                        time: "18:00 - 19:30",
+                        name: "惠比壽橫丁 (Ebisu Yokocho) 深夜串燒晚餐",
+                        category: "food",
+                        desc: "體驗東京潮人最愛的熱鬧夜間橫丁文化與串燒乾杯！",
+                        tag: "橫丁美食",
+                        transitNext: "搭乘 地鐵日比谷線 至 六本木 ➔ 約 6 分鐘"
+                    },
+                    {
+                        time: "20:30 - 23:00",
+                        name: "party on Tokyo (Box Discotheque - 第二夜歌舞秀加碼！)",
+                        category: "nightlife",
+                        desc: "【歌舞秀企劃二】全東京最頂級狂熱的超大型 Music Show Club！超華麗舞台表演與派對氛圍！",
+                        tag: "加碼第二夜歌舞秀 / 爆款夜生活",
+                        transitNext: "散步或搭計程車回飯店 ➔ 約 5 分鐘",
+                        photoTip: "拍下震撼 LED 舞台與空中飛人舞孃的高能量演出！"
+                    }
+                ]
+            },
+            {
+                day: 8,
+                date: "12/31 (五) - 橫濱地標塔 ‧ 港灣跨年煙火 ‧ 夜店狂歡倒數",
+                title: "橫濱地標塔 69F Sky Garden ‧ 紅磚倉庫 ‧ 跨年煙火 ‧ 六本木夜店倒數",
+                activities: [
+                    {
+                        time: "12:00 - 14:30",
+                        name: "【追加】橫濱地標塔 69 樓空中花園 (Sky Garden)",
+                        category: "spot",
+                        desc: "搭乘日本最快速梯登頂 69 樓，360 度俯瞰橫濱港灣與富士山蔚藍海景！",
+                        tag: "追加絕景",
+                        transitNext: "步行 12 分鐘至紅磚倉庫",
+                        photoTip: "站在全景玻璃窗前，拍下以橫濱港灣與港區大摩天輪為背景的空拍感時尚照！"
+                    },
+                    {
+                        time: "15:00 - 17:30",
+                        name: "橫濱未來 21 (Minato Mirai) & 紅磚倉庫",
+                        category: "spot",
+                        desc: "美麗港灣風光、鋼彈工廠周邊與跨年限定市集，夕陽景致極美。",
+                        tag: "港灣美景",
+                        transitNext: "步行 8 分鐘",
+                        photoTip: "港區大摩天輪與紅磚倉庫海邊長廊拍歐風帥照。"
+                    },
+                    {
+                        time: "18:00 - 20:00",
+                        name: "橫濱勝烈庵炸豬排 / 跨年年越蕎麥麵",
+                        category: "food",
+                        desc: "遵從日本傳統在除夕夜享用「跨年蕎麥麵」，象徵長壽與切斷今年厄運。",
+                        tag: "傳統美食",
+                        transitNext: "步行至橫濱港灣觀景平台"
+                    },
+                    {
+                        time: "22:00 - 00:30",
+                        name: "【跨年重頭戲】橫濱港倒數煙火大會 (Yokohama Sparking)",
+                        category: "spot",
+                        desc: "必去亮點！橫濱港灣 Midnight 煙火璀璨綻放！夜空被五彩花火點亮，歡慶迎接 2027！",
+                        tag: "跨年煙火 / 經典震撼",
+                        transitNext: "搭乘 跨年通宵營運電車 (JR湘南新宿線/東急東橫線) 返回東京六本木 ➔ 約 35 分鐘",
+                        photoTip: "煙火在夜空中綻放時的慢速快門或男團開香檳慶祝倒數短影音。"
+                    },
+                    {
+                        time: "01:30 - 05:00",
+                        name: "六本木頂級 Nightclub 跨年續攤 (SEL OCTAGON / ZOUK)",
+                        category: "nightlife",
+                        desc: "23歲男團的跨年下半場！現場世界級 DJ 音樂、噴紙花、香檳慶典，狂歡通宵到天亮！",
+                        tag: "夜店狂歡",
+                        transitNext: "清晨搭乘電車或計程車返回飯店"
+                    }
+                ]
+            },
+            {
+                day: 9,
+                date: "01/01 (六) - 皇居二重橋 ‧ 東京車站伴手禮 ‧ 圓滿返航",
+                title: "皇居外苑二重橋 ‧ 東京車站伴手禮爆買 ‧ 順利返台",
+                activities: [
+                    {
+                        time: "09:00 - 10:15",
+                        name: "【優化時間】皇居外苑 (Kokyo Gaien) & 二重橋經典巡禮",
+                        category: "spot",
+                        desc: "元旦早晨前往皇居外苑散步，拍下護城河、古典二重橋與黑松林交織的日式皇家氛圍。",
+                        tag: "追加元旦亮點",
+                        transitNext: "步行 10 分鐘直達東京車站",
+                        photoTip: "以古典石造二重橋與後方白牆角樓為背景拍攝新年初一合照！"
+                    },
+                    {
+                        time: "10:15 - 11:15",
+                        name: "東京車站 (Tokyo Station) 伴手禮採買",
+                        category: "spot",
+                        desc: "採買 NewYork Perfect Cheese、東京香蕉與各種潮流伴手禮。",
+                        tag: "伴手禮",
+                        transitNext: "步行 3 分鐘至拉麵街"
+                    },
+                    {
+                        time: "11:15 - 12:15",
+                        name: "【優化時間】東京拉麵街 (Tokyo Ramen Street) 午餐",
+                        category: "food",
+                        desc: "【提早享用】六厘舍極致沾麵或斑鳩拉麵，作為東京美食巡禮的完美句點。",
+                        tag: "人氣美食",
+                        transitNext: "搭乘 N'EX 成田特急 (50分鐘) 或 京急線直通羽田 (30分鐘) 前往機場"
+                    },
+                    {
+                        time: "12:15 - 15:00",
+                        name: "【安全寬裕】前往機場 & 搭乘 15:00 航班返台",
+                        category: "flight",
+                        desc: "保留充裕 2 小時抵達機場辦理登機與託運，滿載戰利品順利返國！",
+                        tag: "返程"
+                    }
+                ]
+            }
+        ];
+
+        // Map Pins Data
+        const mapLocations = [
+            { name: "淺草寺 (Sensoji)", lat: 35.7148, lng: 139.7967, category: "spot", day: 2 },
+            { name: "東京晴空塔 (Skytree)", lat: 35.7101, lng: 139.8107, category: "spot", day: 2 },
+            { name: "隅田水岸步道", lat: 35.7120, lng: 139.8020, category: "spot", day: 2 },
+            { name: "YORONIKU (和牛燒肉)", lat: 35.6624, lng: 139.7153, category: "food", day: 2 },
+            { name: "Sky Lounge Stellar Garden", lat: 35.6548, lng: 139.7483, category: "nightlife", day: 2 },
+            { name: "秋葉原 (Akihabara)", lat: 35.6983, lng: 139.7731, category: "spot", day: 3 },
+            { name: "神田萬世橋", lat: 35.6972, lng: 139.7705, category: "spot", day: 3 },
+            { name: "銀座八芳 (Happo)", lat: 35.6712, lng: 139.7650, category: "food", day: 3 },
+            { name: "明治神宮", lat: 35.6764, lng: 139.6993, category: "spot", day: 5 },
+            { name: "築地場外市場", lat: 35.6654, lng: 139.7707, category: "food", day: 4 },
+            { name: "Burlesque Tokyo (歌舞秀 1)", lat: 35.6627, lng: 139.7330, category: "nightlife", day: 4 },
+            { name: "帝王蟹吃到飽", lat: 35.6680, lng: 139.7680, category: "food", day: 4 },
+            { name: "SHIBUYA SKY", lat: 35.6585, lng: 139.7023, category: "spot", day: 5 },
+            { name: "澀谷 MEGA Don Quijote", lat: 35.6602, lng: 139.6985, category: "spot", day: 5 },
+            { name: "teamLab Planets", lat: 35.6491, lng: 139.7898, category: "spot", day: 6 },
+            { name: "台場海濱公園 / 自由女神", lat: 35.6288, lng: 139.7718, category: "spot", day: 6 },
+            { name: "東京鐵塔 (Tokyo Tower)", lat: 35.6586, lng: 139.7454, category: "spot", day: 6 },
+            { name: "party on Tokyo (歌舞秀 2)", lat: 35.6620, lng: 139.7325, category: "nightlife", day: 7 },
+            { name: "歌舞伎町哥吉拉", lat: 35.6955, lng: 139.7020, category: "spot", day: 7 },
+            { name: "橫濱地標塔 69F Sky Garden", lat: 35.4550, lng: 139.6315, category: "spot", day: 8 },
+            { name: "橫濱未來21 (跨年煙火)", lat: 35.4542, lng: 139.6313, category: "spot", day: 8 },
+            { name: "皇居二重橋", lat: 35.6798, lng: 139.7580, category: "spot", day: 9 }
+        ];
+
+        function renderItinerary() {
+            const container = document.getElementById('itinerary-timeline');
+            const filterContainer = document.getElementById('day-filter-container');
+
+            let filterHtml = `<button onclick="filterDay('all')" id="btn-all" class="day-btn active px-3 py-1.5 text-xs rounded-lg font-semibold bg-sky-500 text-white transition">全9天</button>`;
+            for (let i = 1; i <= 9; i++) {
+                filterHtml += `<button onclick="filterDay(${i})" id="btn-day-${i}" class="day-btn px-3 py-1.5 text-xs rounded-lg font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">D${i}</button>`;
+            }
+            filterContainer.innerHTML = filterHtml;
+
+            let html = "";
+            itineraryData.forEach(dayData => {
+                const isNYE = dayData.day === 8;
+                const isShowDay = dayData.day === 4 || dayData.day === 7;
+                html += `
+                <div class="day-card glass-card rounded-2xl p-5 sm:p-6 space-y-4 border ${isNYE ? 'border-pink-500/50 bg-gradient-to-r from-slate-900 via-purple-950/20 to-slate-900' : isShowDay ? 'border-pink-500/30 bg-slate-900/90' : 'border-slate-800'}" id="day-card-${dayData.day}">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-700/80 pb-3 gap-2">
+                        <div>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-md ${isNYE ? 'bg-pink-500 text-white' : 'bg-sky-500/20 text-sky-400'}">Day ${dayData.day}</span>
+                            <span class="text-xs text-slate-400 ml-2">${dayData.date}</span>
+                            <h3 class="text-xl font-bold text-white mt-1">${dayData.title}</h3>
+                        </div>
+                        ${isNYE ? '<span class="text-xs bg-pink-500/20 text-pink-300 border border-pink-500/40 px-3 py-1 rounded-full font-semibold"><i class="fa-solid fa-sparkles mr-1"></i>跨年高潮夜</span>' : ''}
+                        ${isShowDay ? '<span class="text-xs bg-pink-500/20 text-pink-300 border border-pink-500/40 px-3 py-1 rounded-full font-semibold"><i class="fa-solid fa-martini-glass-citrus mr-1"></i>奢華歌舞秀之夜</span>' : ''}
+                    </div>
+
+                    <div class="space-y-3">
+                        ${dayData.activities.map(act => {
+                            let categoryIcon = "fa-location-dot text-sky-400";
+                            let badgeBg = "bg-sky-500/10 text-sky-400 border-sky-500/20";
+                            if(act.category === "food") {
+                                categoryIcon = "fa-utensils text-amber-400";
+                                badgeBg = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                            } else if(act.category === "nightlife") {
+                                categoryIcon = "fa-martini-glass-citrus text-pink-400";
+                                badgeBg = "bg-pink-500/10 text-pink-400 border-pink-500/20";
+                            } else if(act.category === "flight") {
+                                categoryIcon = "fa-plane text-purple-400";
+                                badgeBg = "bg-purple-500/10 text-purple-400 border-purple-500/20";
+                            }
+
+                            return `
+                            <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition space-y-2">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid ${categoryIcon} text-sm w-4"></i>
+                                        <span class="font-bold text-sm text-slate-100">${act.name}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded">${act.time}</span>
+                                        <span class="text-xs px-2 py-0.5 rounded border ${badgeBg}">${act.tag}</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-300 pl-6">${act.desc}</p>
+                                ${act.photoTip ? `
+                                <div class="ml-6 p-2 bg-sky-950/40 border border-sky-500/20 rounded-lg text-xs text-sky-300 flex items-start gap-2">
+                                    <i class="fa-solid fa-camera text-sky-400 mt-0.5 flex-shrink-0"></i>
+                                    <span><strong>質感拍照提示：</strong> ${act.photoTip}</span>
+                                </div>
+                                ` : ''}
+                                ${act.transitNext ? `
+                                <div class="ml-6 p-2 bg-slate-800/80 border border-slate-700/80 rounded-lg text-xs text-amber-300 flex items-center gap-2">
+                                    <i class="fa-solid fa-route text-amber-400 flex-shrink-0"></i>
+                                    <span><strong>前往下站交通：</strong> ${act.transitNext}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function filterDay(day) {
+            const cards = document.querySelectorAll('.day-card');
+            const buttons = document.querySelectorAll('.day-btn');
+
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-sky-500', 'text-white');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+
+            if (day === 'all') {
+                cards.forEach(card => card.style.display = 'block');
+                document.getElementById('btn-all').classList.add('bg-sky-500', 'text-white');
+            } else {
+                cards.forEach(card => card.style.display = 'none');
+                const activeCard = document.getElementById(`day-card-${day}`);
+                if (activeCard) activeCard.style.display = 'block';
+                document.getElementById(`btn-day-${day}`).classList.add('bg-sky-500', 'text-white');
+            }
+        }
+
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function toggleCurrencyModal() {
+            const modal = document.getElementById('currencyModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function convertCurrency(type) {
+            const rate = 0.21;
+            const jpyInput = document.getElementById('jpyInput');
+            const twdInput = document.getElementById('twdInput');
+
+            if (type === 'jpy') {
+                const jpy = parseFloat(jpyInput.value) || 0;
+                twdInput.value = Math.round(jpy * rate);
+            } else {
+                const twd = parseFloat(twdInput.value) || 0;
+                jpyInput.value = Math.round(twd / rate);
+            }
+        }
+
+        function initMap() {
+            const map = L.map('map').setView([35.6762, 139.7503], 11);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            mapLocations.forEach(loc => {
+                let color = "#38bdf8";
+                if (loc.category === "food") color = "#f59e0b";
+                if (loc.category === "nightlife") color = "#ec4899";
+
+                const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px ${color};"></div>`;
+                
+                const customIcon = L.divIcon({
+                    html: markerHtml,
+                    className: 'custom-map-pin',
+                    iconSize: [14, 14]
+                });
+
+                L.marker([loc.lat, loc.lng], { icon: customIcon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="color: #0f172a; font-family: sans-serif; font-size: 12px; padding: 2px;">
+                            <strong style="font-size: 14px;">${loc.name}</strong><br/>
+                            <span style="color: #64748b;">行程規劃：Day ${loc.day}</span>
+                        </div>
+                    `);
+            });
+        }
+
+        window.onload = function() {
+            renderItinerary();
+            initMap();
+        };
+    </script>
+</body>
+</html>
